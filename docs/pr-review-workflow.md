@@ -1,12 +1,12 @@
 # Codex App 本地开发到 PR Review 流程
 
-这份文档说明从 Codex App 本地开发，到 GitHub PR、Codex Cloud Review、Vercel Preview，再到人工确认和合并的标准流程。
+这份文档说明从 Codex App 本地开发，到 GitHub PR、Codex Cloud Review，再到人工确认和合并的标准流程。
 
 ## 总览
 
 一句话概括：
 
-GitHub CLI 负责把 PR 创建流程自动化，Codex Cloud 负责 PR Review 和修复，Vercel 负责预览部署，最后由人决定是否合并。
+GitHub CLI 负责把 PR 创建流程自动化，Codex Cloud 负责 PR Review 和修复，最后由人决定是否合并。
 
 ## 时序图
 
@@ -18,7 +18,6 @@ sequenceDiagram
     participant Git as Git / GitHub CLI
     participant PR as GitHub PR
     participant Cloud as Codex Cloud
-    participant Vercel as Vercel Preview
 
     Human->>App: 提出需求或修改目标
     App->>App: 本地写代码、改代码、运行检查
@@ -30,9 +29,6 @@ sequenceDiagram
     PR->>Cloud: @codex address that feedback
     Cloud->>Git: 自动修改并 push commit
     Git->>PR: 更新 PR 分支
-    PR->>Vercel: 触发 Preview 自动部署
-    Vercel-->>PR: 返回预览链接和部署状态
-    Human->>Vercel: 验证页面和功能
     Human->>PR: 最终确认
     Human->>Git: gh pr merge 或 Merge pull request
 ```
@@ -44,10 +40,9 @@ sequenceDiagram
 3. 使用 Codex App 在本地开发、修改代码、运行必要检查。
 4. 使用 GitHub CLI 创建 PR。
 5. 在 GitHub PR 中触发 Codex Cloud Review。
-6. 等待 Vercel Preview 自动部署并查看效果。
-7. 如果 Review 或预览发现问题，在 PR 中让 Codex Cloud 修复并提交。
-8. 人工最终确认代码、检查状态和预览结果。
-9. 合并 PR。
+6. 如果 Review 发现问题，在 PR 中让 Codex Cloud 修复并提交。
+7. 人工最终确认代码、检查状态和修改结果。
+8. 合并 PR。
 
 ## 工具分工
 
@@ -57,7 +52,6 @@ sequenceDiagram
 | GitHub CLI (`gh`) | 不打开网页也能创建 PR、查看 PR、检查状态、合并 PR |
 | GitHub PR | 承载代码评审、讨论、检查状态和合并流程 |
 | Codex Cloud | 云端 AI Review，根据反馈自动修复并提交 commit |
-| Vercel | 为 PR 自动生成 Preview 部署，方便验证页面效果 |
 | 人工 | 最后确认需求、效果、风险，并决定是否合并 |
 
 ## 常用命令
@@ -121,5 +115,4 @@ Codex Cloud 会根据反馈修改代码、运行可用检查，并把新的 comm
 - 分支名清晰，例如 `codex/fix-demo` 或 `feature/login-flow`。
 - Codex Cloud Review 已完成，关键反馈已处理。
 - `gh pr checks` 没有失败项，或失败项已经明确可接受。
-- Vercel Preview 已打开验证，页面和核心流程符合预期。
 - 人工确认代码、效果和风险后，再执行 Merge。
