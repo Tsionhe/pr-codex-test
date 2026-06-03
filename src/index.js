@@ -1,3 +1,1 @@
-console.log('hello world!')；
-
-const test = “test”
+console.log('hello world!')

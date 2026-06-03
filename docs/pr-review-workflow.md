@@ -138,6 +138,32 @@ gh pr checks
 
 如果 GitHub PR 里完全没有 Codex 的 review、comment 或 check，那么 GitHub CLI 也通常看不到 Codex 的结果。此时不要把“Codex Cloud 显示成功”直接当作合并依据，因为这个结果没有进入 GitHub 的 PR 审核闭环。
 
+### 自动 Review 有问题时的表现
+
+新建 PR 后，如果 **Automatic reviews** 正常触发，并且 Codex 发现需要处理的问题，结果会出现在 GitHub PR 的评论或 review 中。
+
+常见表现是：
+
+- 评论来自 `chatgpt-codex-connector[bot]`。
+- 评论标题类似 `Codex Review`。
+- 评论里会显示 `Reviewed commit`，用于说明审核的是哪个 commit。
+- 具体问题会挂在对应文件和代码行附近。
+- 问题会带优先级，例如 `P1`。
+- 评论会说明为什么这是问题，以及建议如何修复。
+
+例如，如果 `src/index.js` 里用了全角分号 `；` 或中文智能引号，导致 JavaScript 无法解析，Codex 可能会在 PR 里留下类似这样的 Review 意见：
+
+```text
+P1 Restore ASCII JavaScript delimiters
+
+In any environment that executes src/index.js with a JavaScript parser,
+the full-width ； after this statement is not a valid token,
+so the file fails to parse before any code runs.
+Replace these with ASCII JavaScript punctuation so the entrypoint can load.
+```
+
+看到这类评论时，不要直接 Merge。应先修复问题，或在 PR 里让 Codex Cloud 根据反馈自动修改并提交。
+
 这种情况建议优先排查：
 
 - GitHub App 或 Codex Cloud 是否仍有该仓库的写评论 / 写 review 权限。
