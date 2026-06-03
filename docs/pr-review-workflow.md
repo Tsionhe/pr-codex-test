@@ -71,6 +71,8 @@ sequenceDiagram
 | Codex Cloud | 云端 AI Review，根据反馈自动修复、运行检查并提交 commit |
 | 人工 | 最后确认需求、效果、风险，并决定是否合并 |
 
+GitHub CLI 可以让 Codex App 在本地远程操作 GitHub PR，例如创建 PR、查看 PR、评论 PR、触发 Codex、合并 PR 或关闭 PR。
+
 ## 常用命令
 
 ### 安装和登录 GitHub CLI
@@ -104,6 +106,22 @@ gh pr view --web
 
 # 查看检查状态
 gh pr checks
+```
+
+### 远程操作 PR
+
+```powershell
+# 给 PR 发评论
+gh pr comment 5 --body "@codex review"
+
+# 让 Codex 修复
+gh pr comment 5 --body "@codex 帮我修复代码，并且提交到当前分支"
+
+# 合并 PR
+gh pr merge 5 --merge
+
+# 关闭 PR
+gh pr close 5
 ```
 
 ## 在 PR 中使用 Codex
