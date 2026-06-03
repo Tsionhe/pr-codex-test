@@ -1,6 +1,6 @@
 # Codex App 本地开发到 PR Review 流程
 
-这份文档说明从 Codex App 本地开发，到 GitHub PR、Codex Cloud Review，再到人工确认和合并的标准流程。
+这份文档说明从 Codex App 本地开发，到 GitHub PR、Codex Cloud 自动 Review、Codex Cloud 修复并提交，再到人工确认和合并的标准流程。
 
 ## 总览
 
@@ -14,8 +14,12 @@ GitHub CLI 负责把 PR 创建流程自动化，Codex Cloud 负责 PR Review 和
 
 1. 打开 Codex Cloud，并关联 GitHub 账号或组织。
 2. 为目标 GitHub 仓库完成 Codex Cloud 设置。
-3. 进入 Codex 的代码审核设置页，为目标仓库开启 **Code review**。
-4. 如果希望后续新建 PR 自动审核，再开启 **Automatic reviews**。
+3. 配好该仓库的 Codex Cloud 环境，包括仓库访问权限、默认分支、依赖安装、测试 / 检查命令等。
+4. 提交并保存仓库环境配置。
+5. 进入 Codex 的代码审核设置页，为目标仓库开启 **Code review**。
+6. 如果希望后续新建 PR 自动审核，再开启 **Automatic reviews**。
+
+仓库环境配置很关键。Codex Cloud 需要知道如何拉取仓库、安装依赖、运行检查和把修改提交回 PR 分支；如果环境没有提交配置好，PR 里的自动 Review、根据反馈修复、运行检查或 push commit 都可能不生效。
 
 开启 **Code review** 后，可以在 PR 评论里用 `@codex review` 手动触发审核。
 
@@ -64,7 +68,7 @@ sequenceDiagram
 | Codex App | 本地写代码、改代码、运行检查、提交分支 |
 | GitHub CLI (`gh`) | 不打开网页也能创建 PR、查看 PR、检查状态、合并 PR |
 | GitHub PR | 承载代码评审、讨论、检查状态和合并流程 |
-| Codex Cloud | 云端 AI Review，根据反馈自动修复并提交 commit |
+| Codex Cloud | 云端 AI Review，根据反馈自动修复、运行检查并提交 commit |
 | 人工 | 最后确认需求、效果、风险，并决定是否合并 |
 
 ## 常用命令
@@ -164,30 +168,51 @@ Replace these with ASCII JavaScript punctuation so the entrypoint can load.
 
 看到这类评论时，不要直接 Merge。应先修复问题，或在 PR 里让 Codex Cloud 根据反馈自动修改并提交。
 
-这种情况建议优先排查：
+### 让 Codex 修复并提交
+
+当 Review 有反馈需要处理时，可以直接在 PR 评论中 @Codex，让它修复代码、运行可用检查，并提交到当前 PR 分支。
+
+中文写法也可以：
+
+```text
+@codex 帮我修复代码，并且提交到当前分支
+```
+
+英文写法：
+
+```text
+@codex address that feedback, run checks if available, and push a commit to this PR branch.
+```
+
+如果 Codex Cloud 仓库环境配置正确，Codex 会在 PR 里返回处理结果，通常包括：
+
+- 修复摘要。
+- 修改的文件和代码位置。
+- 新提交的 commit。
+- 已运行的检查命令和结果。
+
+例如它可能会说明已经把智能引号换成 ASCII 引号，并运行了 `node --check src/index.js` 之类的检查。
+
+### 异常排查
+
+如果自动 Review 没触发、GitHub PR 看不到 Codex 结果，或者 @Codex 后没有成功修复并提交，建议优先排查：
 
 - GitHub App 或 Codex Cloud 是否仍有该仓库的写评论 / 写 review 权限。
 - 目标仓库是否已开启 **Code review** 和 **Automatic reviews**。
 - PR 是否是开启 **Automatic reviews** 之后新建并进入 review 的 PR。
 - PR 当前 commit 是否就是 Codex Cloud 完成审核的那个 commit。
 - 手动评论 `@codex review` 后，GitHub 侧是否能收到 Codex 的 review。
+- Codex Cloud 的仓库环境是否已经提交配置好，尤其是依赖安装和检查命令。
 
 如果手动 `@codex review` 也无法把结果写回 GitHub，说明 GitHub 回写链路可能有权限或集成问题，需要先修复；否则这个自动 Review 不适合作为 Merge 前的强制判断标准。
 
-### 让 Codex 修复并提交
-
-当 Review 有反馈需要处理时，在 PR 评论中输入：
-
-```text
-@codex address that feedback, run checks if available, and push a commit to this PR branch.
-```
-
-Codex Cloud 会根据反馈修改代码、运行可用检查，并把新的 commit 推送到当前 PR 分支。
+如果 @Codex 可以收到指令但不能修复、不能运行检查或不能 push commit，优先检查 Codex Cloud 仓库环境是否已经提交配置好，以及该 GitHub App 是否有写入 PR 分支的权限。
 
 ## 合并前检查清单
 
 - PR 不直接修改 `main`。
 - 分支名清晰，例如 `codex/fix-demo` 或 `feature/login-flow`。
+- Codex Cloud 仓库环境已提交配置好。
 - Codex Cloud Review 已完成，并且对应当前 PR 的最新 commit。
 - GitHub PR 页面或 `gh` 命令能看到 Codex Review 结果。
 - Codex 没有发现需要处理的高优先级问题，或关键反馈已处理。
